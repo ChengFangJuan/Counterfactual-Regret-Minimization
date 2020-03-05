@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from __future__ import division
-import matplotlib
-matplotlib.use('Qt4Agg')
+# import matplotlib
+# matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import random
 

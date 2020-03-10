@@ -33,7 +33,14 @@ def default_infoset_format(player, holecards, board, bet_history):
 
 # 定义游戏设置
 class GameRules(object):
-    def __init__(self, players, deck, rounds, ante, blinds, handeval=None, infoset_format=None):
+    def __init__(self, players, deck, rounds, ante, blinds, handeval=None, infoset_format=default_infoset_format):
+        '''player: 玩家数
+           deck: 游戏中所有的牌，list，元素为类
+           rounds: 每个回合的信息，list，元素为类
+           ante: 最小加注数
+           blinds: 大小盲注，list
+           handeval: 评估函数
+           infoset_format: 信息集表示方法'''
         assert (players >= 2)  # player count
         assert (ante >= 0)
         assert (rounds != None)
@@ -67,7 +74,7 @@ class RoundInfo(object):
 class GameTree(object):
     # rules 为定义的游戏设置
     def __init__(self, rules):
-        self.rules = deepcopy(rules)
+        self.rules = rules
         self.information_sets = {}
         self.root = None
 
@@ -384,9 +391,9 @@ class PublicTree(GameTree):
 class Node(object):
     def __init__(self, parent, committed, holecards, board, deck, bet_history):
         self.committed = deepcopy(committed)
-        self.holecards = deepcopy(holecards)
-        self.board = deepcopy(board)
-        self.deck = deepcopy(deck)
+        self.holecards = holecards
+        self.board = board
+        self.deck = deck
         self.bet_history = deepcopy(bet_history)
         if parent:
             self.parent = parent
@@ -408,6 +415,7 @@ class TerminalNode(Node):
 
 class HolecardChanceNode(Node):
     def __init__(self, parent, committed, holecards, board, deck, bet_history, todeal):
+        '''to deal: 本回合手牌数'''
         Node.__init__(self, parent, committed, holecards, board, deck, bet_history)
         self.todeal = todeal
         self.children = []

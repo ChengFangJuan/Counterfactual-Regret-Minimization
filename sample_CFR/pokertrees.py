@@ -74,6 +74,7 @@ class RoundInfo(object):
 class GameTree(object):
     # rules 为定义的游戏设置
     def __init__(self, rules):
+        # rules type: 类, 定义游戏的规则
         self.rules = rules
         self.information_sets = {}
         self.root = None
@@ -106,18 +107,18 @@ class GameTree(object):
 
     def build_rounds(self, root, players_in, committed, holes, board, deck, bet_history, round_idx, bets=None,
                      next_player=0):
-
-        if round_idx == len(self.rules.roundinfo): # 表示游戏结束
+        # root:根节点(初始None),players_in:玩家是否在玩,committed:累计加注筹码,holes:手牌,board:公共牌,deck:所有牌,bet_history:历史动作,round_idx:本回合编号,bets:加注筹码,next_player:玩家编号
+        if round_idx == len(self.rules.roundinfo): # 表示游戏结束，创建终结点
             return self.showdown(root, players_in, committed, holes, board, deck, bet_history)
         bet_history += "/"
         cur_round = self.rules.roundinfo[round_idx]
-        while not players_in[next_player]:
+        while not players_in[next_player]: # 如果此玩家弃牌，则下移到下一位玩家做决策
             next_player = (next_player + 1) % self.rules.players
         if bets is None:
             bets = [0] * self.rules.players
-        min_actions_this_round = players_in.count(True)
+        min_actions_this_round = players_in.count(True) # 此回合的最少动作数，即目前还存在多少玩家
         actions_this_round = 0
-        if cur_round.holecards:
+        if cur_round.holecards: # 如果此回合存在手牌，则先建立发手牌机会节点
             return self.build_holecards(root, next_player, players_in, committed, holes, board, deck, bet_history,
                                         round_idx, min_actions_this_round, actions_this_round, bets)
         if cur_round.boardcards:
@@ -172,12 +173,12 @@ class GameTree(object):
         return bnode
 
     def build_bets(self, root, next_player, players_in, committed, holes, board, deck, bet_history, round_idx,
-                   min_actions_this_round, actions_this_round, bets_this_round):
+                   min_actions_this_round, actions_this_round, bets_this_round): # holes: 双方玩家所有可能手牌
         # if everyone else folded, end the hand
-        if players_in.count(True) == 1:
+        if players_in.count(True) == 1: # 如果玩家弃牌，游戏结束，创建终结点
             self.showdown(root, players_in, committed, holes, board, deck, bet_history)
             return
-        # if everyone checked or the last raisor has been called, end the round
+        # if everyone checked or the last raisor has been called, end the round # 结束本回合，进入下一回合
         if actions_this_round >= min_actions_this_round and self.all_called_last_raisor_or_folded(players_in,
                                                                                                   bets_this_round):
             self.build_rounds(root, players_in, committed, holes, board, deck, bet_history, round_idx + 1)
@@ -191,7 +192,7 @@ class GameTree(object):
         # get the next player to act
         next_player = self.get_next_player(next_player, players_in)
         # add a folding option if someone has bet more than this player
-        if committed[anode.player] < max(committed):
+        if committed[anode.player] < max(committed): # 双方累积加注筹码相等时，弃牌动作不合法
             self.add_fold_child(anode, next_player, players_in, committed, holes, board, deck, bet_history, round_idx,
                                 min_actions_this_round, actions_this_round, bets_this_round)
         # add a calling/checking option
@@ -286,7 +287,7 @@ class PublicTree(GameTree):
         # Assume everyone is in
         players_in = [True] * self.rules.players
         # Collect antes
-        committed = [self.rules.ante] * self.rules.players
+        committed = [self.rules.ante] * self.rules.players # 累计的加注筹码
         bets = [0] * self.rules.players
         # Collect blinds
         next_player = self.collect_blinds(committed, bets, 0)
@@ -297,9 +298,9 @@ class PublicTree(GameTree):
                                       next_player)
 
     def build_holecards(self, root, next_player, players_in, committed, holes, board, deck, bet_history, round_idx,
-                        min_actions_this_round, actions_this_round, bets):
+                        min_actions_this_round, actions_this_round, bets): # min_actions_this_round:此回合最少动作数, actions_this_round:本回合执行动作数
         cur_round = self.rules.roundinfo[round_idx]
-        hnode = HolecardChanceNode(root, committed, holes, board, self.rules.deck, "", cur_round.holecards)
+        hnode = HolecardChanceNode(root, committed, holes, board, self.rules.deck, "", cur_round.holecards) # 创建手牌机会节点
         # Deal holecards
         all_hc = list(combinations(deck, cur_round.holecards))
         updated_holes = []
@@ -395,7 +396,7 @@ class Node(object):
         self.board = board
         self.deck = deck
         self.bet_history = deepcopy(bet_history)
-        if parent:
+        if parent: # 如果父节点存在，此节点加入到父节点的子节点列表中
             self.parent = parent
             self.parent.add_child(self)
 
@@ -415,7 +416,7 @@ class TerminalNode(Node):
 
 class HolecardChanceNode(Node):
     def __init__(self, parent, committed, holecards, board, deck, bet_history, todeal):
-        '''to deal: 本回合手牌数'''
+        # todeal:发几张手牌
         Node.__init__(self, parent, committed, holecards, board, deck, bet_history)
         self.todeal = todeal
         self.children = []

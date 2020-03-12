@@ -11,7 +11,7 @@ def half_street_kuhn_rules():
     deck = [Card(14, 1), Card(13, 1), Card(12, 1)]
     ante = 1
     blinds = None
-    rounds = [RoundInfo(holecards=1, boardcards=0, betsize=1, maxbets=[1, 0])]
+    rounds = [RoundInfo(holecards=1, boardcards=0, betsize=1, maxbets=[1, 0])] # 只一个回合
     return GameRules(players, deck, rounds, ante, blinds, handeval=kuhn_eval, infoset_format=leduc_format)
 
 def half_street_kuhn_gametree():

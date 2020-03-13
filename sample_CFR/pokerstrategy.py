@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from sample_CFR.pokertrees import *
 import random
+import copy
 
 
 def choose(n, k):
@@ -254,7 +255,7 @@ class StrategyProfile(object):
         expected_values = self.br_helper(self.publictree.root, [{(): 1} for _ in range(self.rules.players)], responses)
         for ev in expected_values:
             assert (len(ev) == 1)
-        expected_values = tuple(next(ev.itervalues()) for ev in expected_values)  # pull the EV from the dict returned
+        expected_values = tuple(next(ev.values()) for ev in expected_values)  # pull the EV from the dict returned
         return (StrategyProfile(self.rules, responses), expected_values)
 
     def br_helper(self, root, reachprobs, responses):
@@ -268,7 +269,7 @@ class StrategyProfile(object):
 
     def br_holecard_node(self, root, reachprobs, responses):
         assert (len(root.children) == 1)
-        prevlen = len(reachprobs[0].keys()[0])
+        prevlen = len(list(reachprobs[0].keys())[0])
         possible_deals = float(choose(len(root.deck) - prevlen, root.todeal))
         next_reachprobs = [
             {hc: reachprobs[player][hc[0:prevlen]] / possible_deals for hc in root.children[0].holecards[player]} for
@@ -296,7 +297,7 @@ class StrategyProfile(object):
 
     def br_action_node(self, root, reachprobs, responses):
         strategy = self.strategies[root.player]
-        next_reachprobs = deepcopy(reachprobs)
+        next_reachprobs = reachprobs
         action_probs = {hc: strategy.probs(self.rules.infoset_format(root.player, hc, root.board, root.bet_history)) for
                         hc in root.holecards[root.player]}
         action_payoffs = [None, None, None]
@@ -321,7 +322,7 @@ class StrategyProfile(object):
                 for subpayoff in action_payoffs:
                     if subpayoff is None:
                         continue
-                    for hc, winnings in subpayoff[player].iteritems():
+                    for hc, winnings in subpayoff[player].items():
                         player_payoffs[hc] += winnings
                 payoffs.append(player_payoffs)
         return payoffs

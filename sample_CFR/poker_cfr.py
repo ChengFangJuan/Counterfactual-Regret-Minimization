@@ -2,6 +2,7 @@
 from sample_CFR.pokerstrategy import *
 from sample_CFR.pokergames import *
 import random
+import copy
 
 class CounterfactualRegretMinimizer(object):
     def __init__(self, rules):
@@ -27,7 +28,7 @@ class CounterfactualRegretMinimizer(object):
     def cfr(self):
         self.cfr_helper(self.tree.root, [{(): 1} for _ in range(self.rules.players)]) # 根节点的到达概率为1
 
-    def cfr_helper(self, root, reachprobs): # 递归方式更新
+    def cfr_helper(self, root, reachprobs): # 递归方式更新, reach probs: 每位玩家的到达概率
         if type(root) is TerminalNode:
             return self.cfr_terminal_node(root, reachprobs)
         if type(root) is HolecardChanceNode:
@@ -87,8 +88,8 @@ class CounterfactualRegretMinimizer(object):
 
     def cfr_action_node(self, root, reachprobs):
         # Calculate strategy from counterfactual regret
-        strategy = self.cfr_strategy_update(root, reachprobs)
-        next_reachprobs = deepcopy(reachprobs)
+        strategy = self.cfr_strategy_update(root, reachprobs) # 计算当前节点的策略, 类
+        next_reachprobs = reachprobs
         action_probs = {hc: strategy.probs(self.rules.infoset_format(root.player, hc, root.board, root.bet_history)) for
                         hc in reachprobs[root.player]}
         action_payoffs = [None, None, None]
@@ -110,7 +111,7 @@ class CounterfactualRegretMinimizer(object):
             for i, subpayoff in enumerate(action_payoffs):
                 if subpayoff is None:
                     continue
-                for hc, winnings in subpayoff[player].iteritems():
+                for hc, winnings in subpayoff[player].items():
                     # action_probs is baked into reachprobs for everyone except the acting player
                     if player == root.player:
                         player_payoffs[hc] += winnings * action_probs[hc][i]
@@ -150,7 +151,7 @@ class CounterfactualRegretMinimizer(object):
         for i, subpayoff in enumerate(action_payoffs):
             if subpayoff is None:
                 continue
-            for hc, winnings in subpayoff[root.player].iteritems():
+            for hc, winnings in subpayoff[root.player].items():
                 immediate_cfr = winnings - ev[hc]
                 infoset = self.rules.infoset_format(root.player, hc, root.board, root.bet_history)
                 self.counterfactual_regret[root.player][infoset][i] += immediate_cfr

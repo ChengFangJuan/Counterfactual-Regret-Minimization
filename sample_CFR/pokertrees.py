@@ -3,8 +3,8 @@ from itertools import combinations
 from itertools import permutations
 from itertools import product
 from collections import Counter
-from copy import deepcopy
 from functools import partial
+import copy
 
 FOLD = 0
 CALL = 1
@@ -391,11 +391,11 @@ class PublicTree(GameTree):
 
 class Node(object):
     def __init__(self, parent, committed, holecards, board, deck, bet_history):
-        self.committed = deepcopy(committed)
+        self.committed = copy.deepcopy(committed)
         self.holecards = holecards
         self.board = board
         self.deck = deck
-        self.bet_history = deepcopy(bet_history)
+        self.bet_history = copy.deepcopy(bet_history)
         if parent: # 如果父节点存在，此节点加入到父节点的子节点列表中
             self.parent = parent
             self.parent.add_child(self)
@@ -411,7 +411,7 @@ class TerminalNode(Node):
     def __init__(self, parent, committed, holecards, board, deck, bet_history, payoffs, players_in):
         Node.__init__(self, parent, committed, holecards, board, deck, bet_history)
         self.payoffs = payoffs
-        self.players_in = deepcopy(players_in)
+        self.players_in = copy.deepcopy(players_in)
 
 
 class HolecardChanceNode(Node):

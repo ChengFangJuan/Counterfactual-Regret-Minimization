@@ -12,6 +12,7 @@ RAISE = 2
 KUHN_DECK = [1, 2, 3]
 LEDUC_DECK = [1, 1, 2, 2, 3, 3]
 
+
 # Tracks the regret per game stage
 class gameTreeNode(object):
     """
@@ -69,7 +70,7 @@ class PokerTrainer(object):
         elif self.game == "leduc":
             self.cards = LEDUC_DECK
         self.gameTree = {}
-        self.save_strategy_file = open("strategy.txt",'w')
+        self.save_strategy_file = open("strategy.txt", 'w')
 
     def computer_possible_card(self):
         out = []
@@ -99,9 +100,9 @@ class PokerTrainer(object):
         strategy_delta = []
         Information_set_count = []
         available_card = self.computer_possible_card()
-        for iter_count in range(1,iterations+1):
+        for iter_count in range(1, iterations + 1):
             # Randomizes array
-            random.shuffle(self.cards) # 重新排列6张牌的顺序
+            random.shuffle(self.cards)  # 重新排列6张牌的顺序
             for i in range(len(available_card)):
                 for j in range(len(available_card[i])):
                     self.cards[j] = available_card[i][j]
@@ -112,10 +113,10 @@ class PokerTrainer(object):
                 sum_delta_value = 0
                 for state, strategy in new_strategy.items():
                     if state not in pre_strategy:
-                        pre_strategy[state] = [1/len(strategy)] * len(strategy)
+                        pre_strategy[state] = [1 / len(strategy)] * len(strategy)
                     pre_strategy_ = np.array(pre_strategy[state])
                     new_strategy_ = np.array(strategy)
-                    delta_value = np.square(new_strategy_-pre_strategy_).sum()
+                    delta_value = np.square(new_strategy_ - pre_strategy_).sum()
                     sum_delta_value += np.sqrt(delta_value)
                 pre_strategy = new_strategy
                 # if sum_delta_value <= 2:
@@ -123,7 +124,7 @@ class PokerTrainer(object):
                 Information_set_count.append(len(pre_strategy))
                 print("============ iter count {0} ============".format(iter_count))
                 print("Information set count :", len(pre_strategy))
-                print("Strategy delta :",sum_delta_value / len(pre_strategy))
+                print("Strategy delta :", sum_delta_value / len(pre_strategy))
 
         # Print Outcome/winnings and each individual percentage to performt hat action
         print("Iterations:", iterations)
@@ -149,7 +150,6 @@ class PokerTrainer(object):
         f1.savefig('strategy_delta.png', dpi=100, bbox_inches='tight')
         f2.savefig('information_set_num.png', dpi=100, bbox_inches='tight')
 
-
     def computer_result(self):
         strategy_dict = dict()
         for gameState in sorted(self.gameTree.keys()):
@@ -157,12 +157,11 @@ class PokerTrainer(object):
             strategy_dict[gameState] = averageStrategy
         return strategy_dict
 
-
     # Calculates one step of Counterfactual regret
     # 其中history表示历史动作，p0，p1表示到达状态的概率，stage表示是否为第二轮押注，roundCounter 每回合执行动作数
     def cfr(self, history, p0, p1, roundCounter, stage2):
         # Finds number result of utility gained for play
-        result = self.evaluateGame(history) # history表示历史的状态，即决策点的状态，返回游戏是否结束，None表示没有结束
+        result = self.evaluateGame(history)  # history表示历史的状态，即决策点的状态，返回游戏是否结束，None表示没有结束
 
         # If it was a terminal state, return the result
         if not result is None:
@@ -287,7 +286,7 @@ class PokerTrainer(object):
 
     # Returns the value of the play in Leduc Poker if it is a terminal state
     def leducEval(self, history):
-        plays = len(history) # history 表示历史动作，大于等于2才可能结束游戏
+        plays = len(history)  # history 表示历史动作，大于等于2才可能结束游戏
         if plays < 1:
             return None
 
@@ -334,7 +333,7 @@ class PokerTrainer(object):
         if not (round1cc or round1cr or round1rr):
             return None
 
-        round2History = history[round2startIndex:] # 表示第二回合的历史动作
+        round2History = history[round2startIndex:]  # 表示第二回合的历史动作
 
         round2Plays = len(round2History)
 
@@ -342,7 +341,8 @@ class PokerTrainer(object):
             return None
 
         # Bet pass in round 2
-        round2f = (round2History == "f")or(round2History == "cf")or(round2History == "crf")or(round2History == "rf")
+        round2f = (round2History == "f") or (round2History == "cf") or (round2History == "crf") or (
+                    round2History == "rf")
         if (round2f):
             return round1pot
 
@@ -355,7 +355,7 @@ class PokerTrainer(object):
         opponent = 1 - player
 
         winner = (self.cards[player] == self.cards[2] or (
-                    self.cards[opponent] != self.cards[2] and self.cards[player] > self.cards[opponent]))
+                self.cards[opponent] != self.cards[2] and self.cards[player] > self.cards[opponent]))
         tie = self.cards[player] == self.cards[opponent]
         # Check to showdown
         round2cc = (round2History == "cc")
@@ -370,7 +370,7 @@ class PokerTrainer(object):
             if tie:
                 return 0
             # return 4+round1pot if winner else -(4+round1pot)
-            return (round1pot+1) if winner else -(round1pot+1)
+            return (round1pot + 1) if winner else -(round1pot + 1)
 
         # Betraise to showdown
         round2rr = round2History == "rrc"
@@ -378,7 +378,7 @@ class PokerTrainer(object):
             if tie:
                 return 0
             # return 8+round1pot if winner else -(8+round1pot)
-            return (round1pot+2) if winner else -(round1pot+2)
+            return (round1pot + 2) if winner else -(round1pot + 2)
 
 
 def main():
@@ -388,6 +388,7 @@ def main():
     # Number of trials
     trainer.train(100000)
     trainer.save_strategy_file.close()
+
 
 #
 if __name__ == "__main__":

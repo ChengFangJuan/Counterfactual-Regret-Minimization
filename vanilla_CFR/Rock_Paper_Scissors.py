@@ -37,6 +37,7 @@ def getStrategy(regretSum, strategy):
         # normalizingSum += strategy[a]
     return strategy
 
+
 def getAction(strategy):
     r = random.random()
     a = 0
@@ -47,6 +48,7 @@ def getAction(strategy):
             break
         a += 1
     return a
+
 
 def train(iterations, P1strategy, P2strategy):
     P1actionUtility = [0.0] * NUM_ACTIONS
@@ -84,6 +86,7 @@ def train(iterations, P1strategy, P2strategy):
             P1regretSum[a] += P1actionUtility[a] - P1actionUtility[P1Action]
             P2regretSum[a] += P2actionUtility[a] - P2actionUtility[P2Action]
 
+
 def getAverageStrategy(strategySum, strategy):
     avgStrategy = [0.0] * NUM_ACTIONS
     normalizingSum = 0.0
@@ -96,6 +99,7 @@ def getAverageStrategy(strategySum, strategy):
             avgStrategy[a] = 1.0 / NUM_ACTIONS
         strategySum[a] += strategy[a]
     return avgStrategy
+
 
 if __name__ == "__main__":
     P1result = []

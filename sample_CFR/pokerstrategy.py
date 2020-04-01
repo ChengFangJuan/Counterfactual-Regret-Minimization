@@ -28,7 +28,7 @@ class Strategy():
         if filename is not None:
             self.load_from_file(filename)
 
-    def build_default(self, gametree): # game tree: 根据游戏规则创建的博弈树
+    def build_default(self, gametree):  # game tree: 根据游戏规则创建的博弈树
         for key in gametree.information_sets:
             infoset = gametree.information_sets[key]
             test_node = infoset[0]
@@ -102,7 +102,7 @@ class Strategy():
 
 
 class StrategyProfile(object):
-    def __init__(self, rules, strategies): # strategies 类型:list，元素 类
+    def __init__(self, rules, strategies):  # strategies 类型:list，元素：类, 个数为玩家数，表示每个玩家的策略类
         assert (rules.players == len(strategies))
         self.rules = rules
         self.strategies = strategies
@@ -253,10 +253,13 @@ class StrategyProfile(object):
             self.publictree.build()
         responses = [Strategy(player) for player in range(self.rules.players)]
         expected_values = self.br_helper(self.publictree.root, [{(): 1} for _ in range(self.rules.players)], responses)
+        expected_values_list = []
         for ev in expected_values:
             assert (len(ev) == 1)
-        expected_values = tuple(next(ev.values()) for ev in expected_values)  # pull the EV from the dict returned
-        return (StrategyProfile(self.rules, responses), expected_values)
+            for id, value in ev.items():
+                expected_values_list.append(value)
+        # expected_values = tuple(ev.values() for ev in expected_values)  # pull the EV from the dict returned
+        return (StrategyProfile(self.rules, responses), expected_values_list)
 
     def br_helper(self, root, reachprobs, responses):
         if type(root) is TerminalNode:
@@ -283,7 +286,7 @@ class StrategyProfile(object):
         return payoffs
 
     def br_boardcard_node(self, root, reachprobs, responses):
-        prevlen = len(reachprobs[0].keys()[0])
+        prevlen = len(list(reachprobs[0].keys())[0])
         possible_deals = float(choose(len(root.deck) - prevlen, root.todeal))
         payoffs = [{hc: 0 for hc in root.holecards[player]} for player in range(self.rules.players)]
         for bc in root.children:

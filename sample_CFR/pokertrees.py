@@ -64,10 +64,10 @@ class GameRules(object):
 # 每回合的信息
 class RoundInfo(object):
     def __init__(self, holecards, boardcards, betsize, maxbets):
-        self.holecards = holecards
-        self.boardcards = boardcards
+        self.holecards = holecards  # 本回合手牌数
+        self.boardcards = boardcards  # 本回合公共牌数
         self.betsize = betsize
-        self.maxbets = maxbets
+        self.maxbets = maxbets  # 本回合每个玩家的可加注到的最大筹码
 
 
 # 博弈树
@@ -116,9 +116,9 @@ class GameTree(object):
             next_player = (next_player + 1) % self.rules.players
         if bets is None:
             bets = [0] * self.rules.players
-        min_actions_this_round = players_in.count(True) # 此回合的最少动作数，即目前还存在多少玩家
+        min_actions_this_round = players_in.count(True)  # 此回合的最少动作数，即目前还存在多少玩家
         actions_this_round = 0
-        if cur_round.holecards: # 如果此回合存在手牌，则先建立发手牌机会节点
+        if cur_round.holecards:  # 如果此回合存在手牌，则先建立发手牌机会节点
             return self.build_holecards(root, next_player, players_in, committed, holes, board, deck, bet_history,
                                         round_idx, min_actions_this_round, actions_this_round, bets)
         if cur_round.boardcards:
@@ -287,7 +287,7 @@ class PublicTree(GameTree):
         # Assume everyone is in
         players_in = [True] * self.rules.players
         # Collect antes
-        committed = [self.rules.ante] * self.rules.players # 累计的加注筹码
+        committed = [self.rules.ante] * self.rules.players  # 累计的加注筹码
         bets = [0] * self.rules.players
         # Collect blinds
         next_player = self.collect_blinds(committed, bets, 0)
@@ -298,11 +298,12 @@ class PublicTree(GameTree):
                                       next_player)
 
     def build_holecards(self, root, next_player, players_in, committed, holes, board, deck, bet_history, round_idx,
-                        min_actions_this_round, actions_this_round, bets): # min_actions_this_round:此回合最少动作数, actions_this_round:本回合执行动作数
+                        min_actions_this_round, actions_this_round, bets):
+        # min_actions_this_round:此回合最少动作数, actions_this_round:本回合执行动作数
         cur_round = self.rules.roundinfo[round_idx]
         hnode = HolecardChanceNode(root, committed, holes, board, self.rules.deck, "", cur_round.holecards) # 创建手牌机会节点
         # Deal holecards
-        all_hc = list(combinations(deck, cur_round.holecards))
+        all_hc = list(combinations(deck, cur_round.holecards))  #所有可能手牌的组合
         updated_holes = []
         for player in range(self.rules.players):
             if not players_in[player]:
